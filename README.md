@@ -15,3 +15,9 @@ brew install air
 ```sh
 air
 ```
+
+### Test proxy
+
+```sh
+curl -v -H "Host: tritounet.fr" http://localhost
+```

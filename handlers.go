@@ -1,0 +1,50 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+)
+
+type HealthResponse struct {
+	Status string `json:"status"`
+}
+
+func health(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	resp := HealthResponse{Status: "ok"}
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		// TODO: que faire si l'encodage échoue ?
+	}
+}
+
+func headers(w http.ResponseWriter, req *http.Request) {
+	for name, headers := range req.Header {
+		for _, h := range headers {
+			fmt.Fprintf(w, "%v: %v\n", name, h)
+		}
+	}
+}
+
+type ErrorResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+func routeHandler(proxy *httputil.ReverseProxy, targets map[string]url.URL) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, ok := targets[r.Host]
+		if !ok {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			resp := ErrorResponse{Code: "404", Message: "Page not found."}
+			if err := json.NewEncoder(w).Encode(resp); err != nil {
+				// TODO: que faire si l'encodage échoue ?
+			}
+			return
+		}
+		proxy.ServeHTTP(w, r)
+	}
+}

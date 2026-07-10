@@ -1,44 +1,18 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"os"
 	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
-type HealthResponse struct {
-	Status string `json:"status"`
-}
-
-func health(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	// w.WriteHeader(http.StatusOK) // optionnel : 200 est déjà le défaut
-	resp := HealthResponse{Status: "ok"}
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		// que faire si l'encodage échoue ? réfléchis-y
-	}
-}
-
-func headers(w http.ResponseWriter, req *http.Request) {
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
-}
-
-func redirectToTls(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "https://IPAddr:443"+r.RequestURI, http.StatusMovedPermanently)
-}
-
 func main() {
+	cfg := loadConfig()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -48,38 +22,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	port := os.Getenv("PORT")
 
 	mux := http.NewServeMux()
 
-	// curl -v -H "Host: tritounet.fr" http://localhost
-	target := url.URL{Scheme: "https", Host: "tritounet.fr", Path: "/"}
+	fmt.Printf("%+v\n", cfg)
 
-	proxy := &httputil.ReverseProxy{
-		Rewrite: func(r *httputil.ProxyRequest) {
-			if debug {
-				dump, err := httputil.DumpRequest(r.In, true)
-				if err != nil {
-					log.Fatal("Error while trying to dump the request : ", err.Error())
-				}
-				fmt.Printf("Dump IN : %s\n", dump)
-			}
-			r.SetURL(&target)
-			r.SetXForwarded()
-			if debug {
-				dump, err := httputil.DumpRequestOut(r.Out, true)
-				if err != nil {
-					log.Fatal("Error while trying to dump the request : ", err.Error())
-				}
-				fmt.Printf("Dump OUT : %s\n", dump)
-			}
-		},
-	}
+	targets := buildTargets(cfg)
+
+	proxy := buildProxy(debug, targets)
 
 	mux.HandleFunc("/health", health)
-	mux.HandleFunc("/headers", headers)
-	mux.Handle("/", proxy)
+	mux.Handle("/", routeHandler(&proxy, targets))
 
-	fmt.Println("Server starting on port 80")
+	fmt.Println("Server starting on port", port)
 
 	if err := http.ListenAndServe(":80", mux); err != nil {
 		log.Fatalf("ListenAndServe error: %v", err)

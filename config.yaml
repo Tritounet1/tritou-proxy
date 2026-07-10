@@ -1,0 +1,11 @@
+routes:
+  "tritounet.fr":
+    target:
+      scheme: "https"
+      host: "tritounet.fr"
+      path: "/"
+  "app.mondomaine.com":
+    target:
+      scheme: "http"
+      host: "localhost:3000"
+      path: "/"
