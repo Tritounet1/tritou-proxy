@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -17,14 +16,6 @@ func health(w http.ResponseWriter, req *http.Request) {
 	resp := HealthResponse{Status: "ok"}
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		// TODO: que faire si l'encodage échoue ?
-	}
-}
-
-func headers(w http.ResponseWriter, req *http.Request) {
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
 	}
 }
 

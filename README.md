@@ -21,3 +21,9 @@ air
 ```sh
 curl -v -H "Host: tritounet.fr" http://localhost
 ```
+
+### Run tests
+
+```sh
+go test -v .
+```
