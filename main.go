@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,9 +13,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type HealthResponse struct {
+	Status string `json:"status"`
+}
+
 func health(w http.ResponseWriter, req *http.Request) {
-	// TODO: retourner un json propre
-	fmt.Fprintf(w, "ok\n")
+	w.Header().Set("Content-Type", "application/json")
+	// w.WriteHeader(http.StatusOK) // optionnel : 200 est déjà le défaut
+	resp := HealthResponse{Status: "ok"}
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		// que faire si l'encodage échoue ? réfléchis-y
+	}
 }
 
 func headers(w http.ResponseWriter, req *http.Request) {
