@@ -39,6 +39,7 @@ func routeHandler(proxy *httputil.ReverseProxy, targets map[string]url.URL) http
 		if !ok {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
+			// TODO: change page not found message
 			resp := ErrorResponse{Code: "404", Message: "Page not found."}
 			if err := json.NewEncoder(w).Encode(resp); err != nil {
 				// TODO: que faire si l'encodage échoue ?
