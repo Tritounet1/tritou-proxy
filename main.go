@@ -26,8 +26,6 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	fmt.Printf("%+v\n", cfg)
-
 	targets := buildTargets(cfg)
 
 	proxy := buildProxy(debug, targets)
