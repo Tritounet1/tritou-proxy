@@ -38,6 +38,7 @@ func buildProxy(debug bool, targets map[string]url.URL) httputil.ReverseProxy {
 			host := r.In.Host
 			target := targets[host]
 			r.SetURL(&target)
+			r.Out.Host = r.In.Host
 			r.SetXForwarded()
 			if debug {
 				dump, err := httputil.DumpRequestOut(r.Out, true)
