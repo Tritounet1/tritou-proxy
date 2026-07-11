@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -21,20 +21,20 @@ type Config struct {
 	Routes map[string]Route `yaml:"routes"`
 }
 
-func loadConfig() Config {
+func loadConfig(file_path string) (Config, error) {
 	var cfg Config
 
-	file, err := os.Open("config.yaml")
+	file, err := os.Open(file_path)
 	if err != nil {
-		log.Fatal(err)
+		return cfg, fmt.Errorf("Error decoding YAML: %v", err)
 	}
 	defer file.Close()
 
 	decoder := yaml.NewDecoder(file)
 	err = decoder.Decode(&cfg)
 	if err != nil {
-		log.Fatalf("Error decoding YAML: %v", err)
+		return cfg, fmt.Errorf("Error decoding YAML: %v", err)
 	}
 
-	return cfg
+	return cfg, nil
 }

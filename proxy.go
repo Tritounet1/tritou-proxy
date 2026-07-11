@@ -7,16 +7,22 @@ import (
 	"net/url"
 )
 
-func buildTargets(cfg Config) map[string]url.URL {
+func buildTargets(cfg Config) (map[string]url.URL, error) {
 	targets := make(map[string]url.URL)
 	for host, route := range cfg.Routes {
+		if route.Target.Scheme == "" {
+			return nil, fmt.Errorf("route %q: scheme is empty", host)
+		}
+		if route.Target.Host == "" {
+			return nil, fmt.Errorf("route %q: host is empty", host)
+		}
 		targets[host] = url.URL{
 			Scheme: route.Target.Scheme,
 			Host:   route.Target.Host,
 			Path:   route.Target.Path,
 		}
 	}
-	return targets
+	return targets, nil
 }
 
 func buildProxy(debug bool, targets map[string]url.URL) httputil.ReverseProxy {

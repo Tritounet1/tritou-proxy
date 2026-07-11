@@ -11,9 +11,12 @@ import (
 )
 
 func main() {
-	cfg := loadConfig()
+	cfg, err := loadConfig("config.yaml")
+	if err != nil {
+		log.Fatalf("error while trying to load config.yaml file %q", err)
+	}
 
-	err := godotenv.Load()
+	err = godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -26,7 +29,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	targets := buildTargets(cfg)
+	targets, err := buildTargets(cfg)
+	if err != nil {
+		log.Fatalf("error while trying to build targets %q", err)
+	}
 
 	proxy := buildProxy(debug, targets)
 

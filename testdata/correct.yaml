@@ -1,0 +1,6 @@
+routes:
+  "backend.test":
+    target:
+      scheme: "http"
+      host: "localhost:3000"
+      path: "/"
